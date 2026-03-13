@@ -9,16 +9,13 @@ wheels/
 # Virtual environments
 .venv
 
-# Data — không commit data thật
+# Data 
 data/raw/
 data/processed/
 data/stream_input/
 
-# Environment — chứa password
+# Environment
 .env
-
-# MLflow runs
-mlruns/
 
 # Jupyter
 .ipynb_checkpoints/
