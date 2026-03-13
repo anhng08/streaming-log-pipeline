@@ -1,0 +1,37 @@
+[project]
+name = "streaming-log-pipeline"
+version = "0.1.0"
+description = "PySpark ETL pipeline – FPT Play STB log analysis"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyspark>=3.5.0",
+    "pandas>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "scikit-learn>=1.4.0",
+    "mlflow>=2.10.0",
+    "faker>=22.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.0.0",
+    "ipykernel>=6.0.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+]
+
+[project.scripts]
+ingest    = "spark_jobs.ingest:main"
+transform = "spark_jobs.transform:main"
+gen-data  = "spark_jobs.generate_fake_data:main"
+
+[dependency-groups] 
+dev = [
+    "jupyter>=1.0.0",
+    "ipykernel>=6.0.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+]
