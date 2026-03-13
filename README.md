@@ -16,7 +16,7 @@ STARTCHANNEL appearing as a last action looked unremarkable. ~24% of churners le
 85% of sessions ended at 0–25% completion. PlayingFromSearch — where users actively sought specific content — had nearly identical completion rate to PlayingFromHome (3.3% vs 3.9%). The problem happens in the first 2 minutes of playback, regardless of how the user arrived.
 
 - Finding 03 — February Anomaly
-A spike to 1,272 active users in February 2016, followed by near-zero activity by March -> Hypothesis: users consuming remaining content before cancelling.
+A spike to 1,272 active users in February 2016, followed by near-zero activity by March -> Users consuming remaining content before cancelling.
 
 ---
 
@@ -24,31 +24,30 @@ A spike to 1,272 active users in February 2016, followed by near-zero activity b
 
 ```
 data/raw/logt*.txt
-  7 files x 71MB
   Python-dict-string format
         |
         v
-spark_jobs/ingest.py          PySpark: RDD.map(ast.literal_eval) -> Parquet
+spark_jobs/ingest.py          
         |
         v
-spark_jobs/transform.py       Clean + Feature Engineering + Window Functions
+spark_jobs/transform.py       
         |
         v
 data/processed/
-  fact_sessions.parquet        706,298 events
-  user_profiles.parquet        3,146 user aggregates
+  fact_sessions.parquet        
+  user_profiles.parquet       
         |
         v
-spark_jobs/load.py            pandas + SQLAlchemy -> PostgreSQL
+spark_jobs/load.py            
         |
         v
-PostgreSQL                    sql/analytics.sql (DAU, funnel, churn)
+PostgreSQL                    
         |
         v
-Metabase Dashboard            User behavior analysis
+Metabase Dashboard            
         |
         v
-Airflow DAG                   Orchestrates full pipeline daily at 2AM
+Airflow DAG                  
 ```
 
 ---
