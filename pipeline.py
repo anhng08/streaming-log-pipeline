@@ -18,7 +18,7 @@ def main():
         "--step",
         choices=["ingest", "transform", "load", "all"],
         default="all",
-        help="Bước cần chạy (mặc định: all)"
+        help="Steps (default: all)"
     )
     args = parser.parse_args()
 
@@ -34,14 +34,7 @@ def main():
         from spark_jobs.load import main as load_main
         run_step("load", load_main)
 
-    print(f"\n{'='*55}")
-    print("  PIPELINE HOÀN THÀNH ✅")
-    print(f"{'='*55}")
-    print("\n  Bước tiếp theo:")
-    print("  → Power BI / Metabase: kết nối localhost:5432, db=log_pipeline")
-    print("  → MLflow UI:           http://localhost:5000")
-    print("  → Chạy ML:             uv run python ml/train.py")
-
+    print("PIPELINE DONE")
 
 if __name__ == "__main__":
     main()
