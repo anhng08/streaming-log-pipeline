@@ -1,13 +1,3 @@
-"""
-dags/fptplay_pipeline_dag.py
------------------------------
-DAG orchestrate toàn bộ pipeline:
-    ingest → transform → load → check_quality
-
-Schedule: @daily (chạy mỗi ngày 1 lần khi có data mới)
-Airflow UI: http://localhost:8080  (admin/admin)
-"""
-
 import sys
 import subprocess
 from pathlib import Path
@@ -47,7 +37,6 @@ def task_check_raw_files(**context):
     total_size = sum(os.path.getsize(f) for f in files) / 1024 / 1024
     print(f"[check] Found {len(files)} file ({total_size:.1f} MB) — continue")
 
-    # Push metadata để downstream tasks dùng (XCom)
     context["ti"].xcom_push(key="file_count", value=len(files))
     context["ti"].xcom_push(key="total_mb",   value=round(total_size, 1))
     return True
@@ -64,7 +53,7 @@ def task_ingest(**context):
     ingest_main()
     elapsed = time.time() - t0
 
-    print(f"[airflow] Ingest hoàn thành trong {elapsed:.1f}s")
+    print(f"[airflow] Ingest done {elapsed:.1f}s")
     context["ti"].xcom_push(key="ingest_duration_s", value=round(elapsed, 1))
 
 
@@ -128,7 +117,6 @@ def task_quality_check(**context):
         else:
             print("[quality] Row count OK")
 
-        # ── Check 2: Null rate trong Mac ──────────────────
         null_mac = conn.execute(
             text('SELECT COUNT(*) FROM fact_sessions WHERE "Mac" IS NULL')
         ).scalar()
@@ -139,26 +127,12 @@ def task_quality_check(**context):
         else:
             print(f"[quality] Null Mac rate: {null_pct:.2f}%")
 
-        # ── Check 3: Date range hợp lý ───────────────────
         date_range = conn.execute(
             text("SELECT MIN(session_date), MAX(session_date) FROM fact_sessions")
         ).fetchone()
         print(f"[quality] Date range: {date_range[0]} → {date_range[1]}")
 
-        # ── Check 4: Churn distribution ───────────────────
-        churn_dist = conn.execute(
-            text("""
-                SELECT churn_label, COUNT(*) as cnt
-                FROM user_profiles
-                GROUP BY churn_label
-                ORDER BY churn_label
-            """)
-        ).fetchall()
-        for row in churn_dist:
-            label = "Active" if row[0] == 0 else "Churned"
-            print(f"[quality] ✓ {label}: {row[1]:,} users")
 
-    # ── Tổng kết pipeline run ─────────────────────────────
     ti = context["ti"]
     ingest_t   = ti.xcom_pull(task_ids="ingest",    key="ingest_duration_s")    or "N/A"
     transform_t = ti.xcom_pull(task_ids="transform", key="transform_duration_s") or "N/A"
@@ -187,8 +161,8 @@ with DAG(
     description="ETL pipeline: FPT Play STB logs → PostgreSQL",
     default_args=default_args,
     start_date=days_ago(1),
-    schedule_interval="0 2 * * *",   # chạy lúc 2:00 AM mỗi ngày
-    catchup=False,                   # không backfill các ngày đã qua
+    schedule_interval="0 2 * * *",   
+    catchup=False,                   
     tags=["fptplay", "etl", "pyspark"],
     doc_md="""
 
@@ -199,16 +173,16 @@ with DAG(
 **Tasks:**
 1. `check_files` — verify raw data exists (ShortCircuit)
 2. `ingest`      — parse Python-dict-string logs → Parquet
-3. `transform`   — feature engineering + churn labels
+3. `transform`   — feature engineering 
 4. `load`        — Parquet → PostgreSQL
-5. `quality`     — row count + null rate + churn distribution check
+5. `quality`     — row count + null rate 
     """,
 ) as dag:
 
     check_files = ShortCircuitOperator(
         task_id="check_files",
         python_callable=task_check_raw_files,
-        doc_md="Kiểm tra file logt*.txt trong data/raw/ — skip nếu không có",
+        doc_md="Check file logt*.txt in data/raw/ — skip if not found",
     )
 
     ingest = PythonOperator(
