@@ -1,11 +1,9 @@
 FROM apache/airflow:2.8.1
 
 USER root
-# Cài Java cho PySpark
 RUN apt-get update && apt-get install -y openjdk-17-jdk && apt-get clean
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 USER airflow
-# Cài Python packages
 COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt --no-cache-dir
